@@ -1,8 +1,5 @@
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.ArrayList;
 
 public class Tree {
     private static class Node {
@@ -24,7 +21,7 @@ public class Tree {
     private Node root;
 
     private void insert(int x) {
-        root = doInsert(root, null, x, 0);
+        root = doInsert(root, null, x, 1);
     }
 
     private static Node doInsert(Node node, Node p, int x, int l) {
@@ -45,13 +42,15 @@ public class Tree {
             a.p.left = b;
         else
             a.p.right = b;
-        if (b != null)
+        if (b != null){
             b.p = a.p;
+        }
     }
     private void change(int key, int nkey){
         remove(key);
         insert(nkey);
     }
+
     private void remove(Node t, int key) {
         if (t == null)
             return;
@@ -65,121 +64,208 @@ public class Tree {
                 m = m.left;
             t.key = m.key;
             replace(m, m.right);
-        } else if (t.left != null) {
+        }
+        else if (t.left != null)
+        {
             replace(t, t.left);
-        } else if (t.right != null) {
+        }
+        else if (t.right != null)
+        {
             replace(t, t.right);
-        } else {
+        }
+        else {
             replace(t, null);
         }
     }
+
     private void remove(int key) {
         remove(root, key);
     }
 
-
-    private void print(Node t) {
-        if (t != null) {
-            print(t.left);
-            System.out.print(t.key+ " ");
-            System.out.print(((t.left != null) ? t.left.key : 0) + " ");
-            System.out.println((t.right != null) ? t.right.key : 0);
-            print(t.right);
-        }
-    }
-    public void print() {
-        print(root);
-        System.out.println();
-    }
-
-    private void fileRead(Tree tree) throws IOException {
-        Path path = Paths.get("C:\\studyjava\\BT.txt");
-        Scanner scanner = new Scanner(path);
+    private void fileRead(Tree tree) throws FileNotFoundException {
+        FileReader f = new FileReader("BT.txt");
+        Scanner scanner = new Scanner(f);
         while (scanner.hasNextInt()) {
             tree.insert(scanner.nextInt());
         }
         scanner.close();
     }
-    private void traversal(){
-        Queue<Node> q = new LinkedList<Node>();
-        ArrayList<Node> ar = new ArrayList<Node>();
-        Node node;
-        Node node1=root;
-        q.add(root);
-        while (!q.isEmpty() ){
-            node = q.peek();
-            ar.add(node);
-            if (node.left!= null)
-                q.add(node.left);
-            if (node.right!= null)
-                q.add(node.right);
-            if ( node1.level != node.level) {
-                System.out.println("");
-            }
-
-            System.out.print(" "+node.key);
-            System.out.print((node.p != null) ? ("(" + node.p.key + ")" ): ("(" + 0 + ")" ));
-
-            if (!q.isEmpty()) node1=q.poll();
-
-        }
-        System.out.println("");
+    private Node search(Node t,int key){
+        if (t == null || t.key ==key)
+            return t;
+        if (key < t.key)
+            return search(t.left, key);
+        else
+            return search(t.right, key);
     }
 
+    private Node search(int key) {
+        return search(root, key);
+    }
 
+    private int height_tree(){
+        if (root==null) return 0;
+        Queue<Node> q = new LinkedList<Node>();
+        int tree_level = 1;
+        Node node_current;
+        Node node_previous = root;
+        q.add(root);
+        while (!q.isEmpty()){
+            node_current = q.peek();
+            if( node_current.p != null && node_current.p.level != node_current.level-1)
+                node_current.level=node_current.p.level+1;
+            if (node_current.p == null && node_current.level!=1 )
+                node_current.level=1;
+            if ( node_current.level != node_previous.level)
+                tree_level++;
+            if (node_current.left!= null)
+                q.add(node_current.left);
+            if (node_current.right!= null)
+                q.add(node_current.right);
+            if (!q.isEmpty()) node_previous=q.poll();
+        }
+        return tree_level;
+    }
+
+    private void print() {
+        if (root != null) {
+            Queue<Node> q = new LinkedList<Node>();
+            ArrayList<String> ar = new ArrayList<String>();
+            ArrayList<String> ar_p = new ArrayList<String>();
+            ArrayList<String> separator = new ArrayList<String>();
+            int index_p;
+            int max_level = height_tree();
+            Node node;
+            Node node_previous = root;
+            q.add(root);
+            for (int j = 0; j < ((int) Math.pow(2, max_level) - 1); j++) {
+                separator.add(" ");
+            }
+            while (!q.isEmpty()) {
+                node = q.peek();
+                if (node_previous.level != node.level) {
+                    for (String x : separator) {
+                        System.out.print(x);
+                    }
+                    System.out.println("");
+                    for (String x : ar) {
+                        System.out.print(x);
+                    }
+                    ar_p.clear();
+                    for (int i = 0; i < ar.size(); i++) {
+                        ar_p.add(ar.get(i));
+                    }
+                    ar.clear();
+                    separator.clear();
+                    for (int m = 0; m < ((int) Math.pow(2, max_level) - 1); m++) {
+                        separator.add(" ");
+                    }
+                }
+                if (node_previous.level != node.level) {
+                    for (int j = 0; j < ((int) Math.pow(2, max_level) - 1); j++) {
+                        ar.add(" ");
+                    }
+                }
+                if (node.p == null) {
+                    for (int j = 0; j < ((int) Math.pow(2, max_level) - 1); j++) {
+                        ar.add(" ");
+                    }
+                    ar.add((int) (Math.pow(2, max_level) / 2) - 1, Integer.toString(node.key));
+                } else {
+                    index_p = ar_p.indexOf(Integer.toString(node.p.key));
+                    if (node.p.left != null && node.p.left.key == node.key) {
+                        ar.set(index_p - ((int) (Math.pow(2, max_level) / (int) Math.pow(2, node.level))), Integer.toString(node.key));
+                        if (node.p.key > 9) separator.set((index_p - 1), " /");
+                        else
+                            separator.set((index_p - 1), "/");
+                    }
+                    if (node.p.right != null && node.p.right.key == node.key) {
+                        ar.set(index_p + ((int) (Math.pow(2, max_level) / (int) Math.pow(2, node.level))), Integer.toString(node.key));
+                        if (node.p.key > 9) separator.set(index_p + 1, "\\");
+                        else
+                            separator.set(index_p + 1, "\\");
+                    }
+                }
+                if (node_previous.level != node.level) {
+
+                    System.out.println("");
+
+                }
+                if (node.p == null) {
+                    ar_p.clear();
+                    for (int i = 0; i < ar.size(); i++) {
+                        ar_p.add(ar.get(i));
+                    }
+                }
+                if (node.left != null)
+                    q.add(node.left);
+                if (node.right != null)
+                    q.add(node.right);
+                if (!q.isEmpty()) node_previous = q.poll();
+            }
+            for (String x : separator) {
+                System.out.print(x);
+            }
+            System.out.println("");
+            for (String x : ar) {
+                System.out.print(x);
+            }
+            System.out.println("");
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         Tree tree = new Tree();
-
         Scanner in = new Scanner(System.in);
         System.out.println("Считать значания из файла для построения бинарного дерева поиска?");
-        System.out.println("да(1)/нет(0)");
+        System.out.println("да(1)/нет, выход(0)");
         int ansver = Integer.parseInt(in.nextLine());
         if (ansver == 1) {
-            System.out.println("Бинарное дерево поиска");
             tree.fileRead(tree);
-            tree.traversal();
-        }
-        ansver=0;
-        while (ansver!=3) {
-            System.out.println("Выберите действие: добавить(0)/изменить(1)/удалить(2)/выход(3):");
-            ansver = Integer.parseInt(in.nextLine());
-            switch (ansver) {
-                case 0:
-                    System.out.println("Вы выбрали добавление элемента введите его значение:");
-                    break;
-                case 1:
-                    System.out.println("Вы выбрали изменение элемента введите: значение элемента, который нужно изменить и значение элемента, на которое нужно изменить, через пробел.");
-                    break;
-                case 2:
-                    System.out.println("Вы выбрали удаление элемента введите его значение:");
-                    break;
-                case 3:
-                    break;
-            }
-            int value;
-            int value1;
-            if (ansver == 0) {
-                value = Integer.parseInt(in.nextLine());
-                tree.insert(value);
-                tree.traversal();
-            }
-            if (ansver == 1) {
-                value = Integer.parseInt(in.next());
-                value1 = Integer.parseInt(in.nextLine());
-                tree.change(value, value1);
-                tree.traversal();
-            }
-            if (ansver == 2) {
-                value = Integer.parseInt(in.nextLine());
-                tree.remove(value);
-                tree.traversal();
+            if (tree.root==null) System.out.println("Бинарное дерево не задано, введите данные в файл");
+            else {
+                System.out.println("Бинарное дерево поиска");
+                tree.print();
+                ansver = 0;
+                while (ansver != 3) {
+                    System.out.println("Выберите действие: добавить(0)/изменить(1)/удалить(2)/выход(3):");
+                    ansver = Integer.parseInt(in.nextLine());
+                    switch (ansver) {
+                        case 0:
+                            System.out.println("Вы выбрали добавление элемента, введите его значение:");
+                            break;
+                        case 1:
+                            System.out.println("Вы выбрали изменение элемента, введите: значение элемента, который нужно изменить и значение элемента, на которое нужно изменить.");
+                            break;
+                        case 2:
+                            System.out.println("Вы выбрали удаление элемента, введите его значение:");
+                            break;
+                        case 3:
+                            break;
+                    }
+                    int value;
+                    int value1;
+                    if (ansver == 0) {
+                        value = Integer.parseInt(in.nextLine());
+                        tree.insert(value);
+                        tree.print();
+                    }
+                    if (ansver == 1) {
+                        value = Integer.parseInt(in.nextLine());
+                        value1 = Integer.parseInt(in.nextLine());
+                        tree.change(value, value1);
+                        tree.print();
+                    }
+                    if (ansver == 2) {
+                        value = Integer.parseInt(in.nextLine());
+                        tree.remove(value);
+                        tree.print();
+                    }
+                }
             }
         }
 
     }
-
-
 }
 
 
