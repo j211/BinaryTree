@@ -1,30 +1,19 @@
+package BTree;
 import java.io.*;
 import java.util.*;
 
 public class Tree {
-    private static class Node {
-        int key;
-        int level;
-        Node left;
-        Node right;
-        Node p;
-        private Node(int key) {
-            this.key = key;
-        }
-        private Node(int key, Node p, int l) {
-            this.key = key;
-            this.p = p;
-            level=l;
-        }
-    }
-
     private Node root;
 
-    private void insert(int x) {
+    Node getRoot(){
+        return root;
+    }
+
+    void insert(int x) {
         root = doInsert(root, null, x, 1);
     }
 
-    private static Node doInsert(Node node, Node p, int x, int l) {
+    Node doInsert(Node node, Node p, int x, int l) {
         if (node == null) {
             return new Node(x,p,l);
         }
@@ -35,7 +24,7 @@ public class Tree {
         }
         return node;
     }
-    private void replace(Node a, Node b) {
+    void replace(Node a, Node b) {
         if (a.p == null)
             root = b;
         else if (a == a.p.left)
@@ -46,12 +35,12 @@ public class Tree {
             b.p = a.p;
         }
     }
-    private void change(int key, int nkey){
+    void change(int key, int nkey){
         remove(key);
         insert(nkey);
     }
 
-    private void remove(Node t, int key) {
+    void remove(Node t, int key) {
         if (t == null)
             return;
         if (key < t.key)
@@ -78,11 +67,11 @@ public class Tree {
         }
     }
 
-    private void remove(int key) {
+    void remove(int key) {
         remove(root, key);
     }
 
-    private void fileRead(Tree tree) throws FileNotFoundException {
+    void fileRead(Tree tree) throws FileNotFoundException {
         FileReader f = new FileReader("BT.txt");
         Scanner scanner = new Scanner(f);
         while (scanner.hasNextInt()) {
@@ -90,7 +79,8 @@ public class Tree {
         }
         scanner.close();
     }
-    private Node search(Node t,int key){
+
+    Node search(Node t,int key){
         if (t == null || t.key ==key)
             return t;
         if (key < t.key)
@@ -99,11 +89,11 @@ public class Tree {
             return search(t.right, key);
     }
 
-    private Node search(int key) {
+    Node search(int key) {
         return search(root, key);
     }
 
-    private int height_tree(){
+    int heightTree(){
         if (root==null) return 0;
         Queue<Node> q = new LinkedList<Node>();
         int tree_level = 1;
@@ -127,14 +117,14 @@ public class Tree {
         return tree_level;
     }
 
-    private void print() {
+    void print() {
         if (root != null) {
             Queue<Node> q = new LinkedList<Node>();
-            ArrayList<String> ar = new ArrayList<String>();
-            ArrayList<String> ar_p = new ArrayList<String>();
-            ArrayList<String> separator = new ArrayList<String>();
+            List<String> ar = new ArrayList<String>();
+            List<String> ar_p = new ArrayList<String>();
+            List<String> separator = new ArrayList<String>();
             int index_p;
-            int max_level = height_tree();
+            int max_level = heightTree();
             Node node;
             Node node_previous = root;
             q.add(root);
@@ -215,58 +205,79 @@ public class Tree {
     }
 
     public static void main(String[] args) throws Exception {
+        Console console = new Console();
+        console.readConsole();
+    }
+}
+
+ class Node {
+    int key;
+    int level;
+    Node left;
+    Node right;
+    Node p;
+    Node(int key) {
+        this.key = key;
+    }
+    Node(int key, Node p, int l) {
+        this.key = key;
+        this.p = p;
+        level=l;
+    }
+}
+
+class Console {
+    private int ansver=1;
+    private Scanner in = new Scanner(System.in);
+    int checkInt() {
+        while (true) {
+            try {
+                return Integer.parseInt(in.nextLine());
+            }
+            catch (NumberFormatException ex) {
+                System.out.println("Ошибка ввода данных, ведите корректное число для дальнейшей работы");
+            }
+        }
+    }
+    void readConsole() throws Exception {
         Tree tree = new Tree();
-        Scanner in = new Scanner(System.in);
-        System.out.println("Считать значания из файла для построения бинарного дерева поиска?");
-        System.out.println("да(1)/нет, выход(0)");
-        int ansver = Integer.parseInt(in.nextLine());
-        if (ansver == 1) {
-            tree.fileRead(tree);
-            if (tree.root==null) System.out.println("Бинарное дерево не задано, введите данные в файл");
-            else {
-                System.out.println("Бинарное дерево поиска");
-                tree.print();
-                ansver = 0;
-                while (ansver != 3) {
-                    System.out.println("Выберите действие: добавить(0)/изменить(1)/удалить(2)/выход(3):");
-                    ansver = Integer.parseInt(in.nextLine());
-                    switch (ansver) {
-                        case 0:
-                            System.out.println("Вы выбрали добавление элемента, введите его значение:");
-                            break;
-                        case 1:
-                            System.out.println("Вы выбрали изменение элемента, введите: значение элемента, который нужно изменить и значение элемента, на которое нужно изменить.");
-                            break;
-                        case 2:
-                            System.out.println("Вы выбрали удаление элемента, введите его значение:");
-                            break;
-                        case 3:
-                            break;
-                    }
-                    int value;
-                    int value1;
-                    if (ansver == 0) {
-                        value = Integer.parseInt(in.nextLine());
-                        tree.insert(value);
-                        tree.print();
-                    }
-                    if (ansver == 1) {
-                        value = Integer.parseInt(in.nextLine());
-                        value1 = Integer.parseInt(in.nextLine());
-                        tree.change(value, value1);
-                        tree.print();
-                    }
-                    if (ansver == 2) {
-                        value = Integer.parseInt(in.nextLine());
-                        tree.remove(value);
-                        tree.print();
+        while (ansver != 0) {
+            System.out.println("Считать значания из файла для построения бинарного дерева поиска?\nда(1)/нет, выход(0)");
+            ansver=checkInt();
+            if  (ansver == 1) {
+                tree.fileRead(tree);
+                if (tree.getRoot()==null)
+                    System.out.println("Бинарное дерево не задано, введите корректные данные в файл");
+                else {
+                    System.out.println("Бинарное дерево поиска");
+                    tree.print();
+                    ansver = 1;
+                    while (ansver != 0) {
+                        System.out.println("Выберите действие: добавить(1)/изменить(2)/удалить(3)/выход(0):");
+                        ansver=checkInt();
+                        switch (ansver) {
+                            case 1:
+                                System.out.println("Вы выбрали добавление элемента, введите его значение:");
+                                tree.insert(checkInt());
+                                tree.print();
+                                break;
+                            case 2:
+                                System.out.println("Вы выбрали изменение элемента, введите: значение элемента, который нужно изменить и значение элемента, на которое нужно изменить.");
+                                tree.change(checkInt(), checkInt());
+                                tree.print();
+                                break;
+                            case 3:
+                              System.out.println("Вы выбрали удаление элемента, введите его значение:");
+                              tree.remove(checkInt());
+                              tree.print();
+                              break;
+                            case 0:
+                                break;
+                        }
                     }
                 }
             }
         }
-
     }
 }
-
-
 
