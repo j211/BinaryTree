@@ -2,17 +2,42 @@ package BTree;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Класс служит для хранения узлов бинарного дерева со свойством
+ * <b>root</b>.
+ * @author Julia Dosaeva
+ * @version 1.0
+ */
+
 public class Tree {
+    /** Свойство - корень*/
     private Node root;
 
+    /** Получает ссылку на корнь бинарного дерева.
+     * @return  Ссылку на корень дерева.
+     */
     Node getRoot(){
         return root;
     }
 
+    /**
+     * Вызов метода добавления узла дерева {@link Tree#doInsert(Node, Node, int, int)}
+     * @param x Установливает значения ключа, добавляемого узла.
+     */
     void insert(int x) {
         root = doInsert(root, null, x, 1);
     }
 
+    /**
+     * Добавляет новый узел дерева, если  дерево пустое, создает новый корень,
+     * иначе добавляет к существующему, с соблюдением условия - ключ правого сына больше ключа родителя,
+     * ключ левого сына меньше ключа родителя. Добавление узла с неуникальным ключом не выполняется. Задаются свойства
+     * @param node - узел дерева
+     * @param p - родительский узел
+     * @param x - значение ключа, добляемого узла
+     * @param l - уровень добавляемого узла
+     * @return -  добавленный узел дерева
+     */
     Node doInsert(Node node, Node p, int x, int l) {
         if (node == null) {
             return new Node(x,p,l);
@@ -24,6 +49,11 @@ public class Tree {
         }
         return node;
     }
+
+    /** Замещает узел дерева
+     * @param a на узел дерева
+     * @param b
+     */
     void replace(Node a, Node b) {
         if (a.p == null)
             root = b;
@@ -35,11 +65,21 @@ public class Tree {
             b.p = a.p;
         }
     }
+
+    /** Замена узла дерева, старый узел удаляется, новый добавляется.
+     * @param key - задает знаяение ключа, которое необходимо изменить
+     * @param nkey - задает знаяение ключа, на которое необходимо изменить
+     */
     void change(int key, int nkey){
         remove(key);
         insert(nkey);
     }
 
+    /**
+     * Удаление узла дерева
+     * @param t - узел дерева
+     * @param key - значение ключа.
+     */
     void remove(Node t, int key) {
         if (t == null)
             return;
@@ -67,19 +107,36 @@ public class Tree {
         }
     }
 
+    /**Вызов метода  {@link Tree#remove(Node, int)} для удаления узла дерева
+     * @param key - ключ удаляемого узла.
+     */
     void remove(int key) {
         remove(root, key);
     }
 
+    /**Чтение ключей для создания дерева из файла формата txt
+     * @param tree - ссылка на дерево
+     * @throws FileNotFoundException - искомый файл не найден.
+     */
     void fileRead(Tree tree) throws FileNotFoundException {
-        FileReader f = new FileReader("BT.txt");
-        Scanner scanner = new Scanner(f);
-        while (scanner.hasNextInt()) {
-            tree.insert(scanner.nextInt());
+        try {
+            FileReader f = new FileReader("BT.txt");
+            Scanner scanner = new Scanner(f);
+            while (scanner.hasNextInt()) {
+                tree.insert(scanner.nextInt());
+            }
+            scanner.close();
         }
-        scanner.close();
+        catch (FileNotFoundException ex) {
+            System.out.println("Требуемый файл не найден или не существует.");
+        }
     }
 
+    /** Поиск узла дерева по ключу
+     * @param t - узел дерева
+     * @param key - ключ узла
+     * @return - узел дерева.
+     */
     Node search(Node t,int key){
         if (t == null || t.key ==key)
             return t;
@@ -89,10 +146,17 @@ public class Tree {
             return search(t.right, key);
     }
 
+    /** Вызов метода поиска узла дерева {@link Tree#search(Node, int)}
+     * @param key - ключ узла
+     * @return - узел дерева.
+     */
     Node search(int key) {
         return search(root, key);
     }
 
+    /**Вычисление высоты дерева
+     * @return - количество узлов дерева.
+     */
     int heightTree(){
         if (root==null) return 0;
         Queue<Node> q = new LinkedList<Node>();
@@ -116,7 +180,7 @@ public class Tree {
         }
         return tree_level;
     }
-
+    /** Вывод дерева на консоль*/
     void print() {
         if (root != null) {
             Queue<Node> q = new LinkedList<Node>();
